@@ -11,6 +11,10 @@ const PORT = 8080;
 
 app.use(express.json()); // Converts the JSON format to JS Object
 
+// Bring the Morgan into use
+const morgan = require('morgan');
+app.use(morgan('dev'));
+
 const ideaRoute = require("./routers/ideasRouters");
 app.use("/ideas_app/v1", ideaRoute);
 

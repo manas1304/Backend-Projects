@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const ideaController = require('../controllers/ideasController');
+const ideasMiddlewware = require("../middleWare/ideasMiddleware");
 
 /*
     Start defining routes
@@ -20,13 +21,13 @@ router.get("/ideas/:id", ideaController.getIdeaBasedOnId);
     Route for creating a new Idea
 */
 
-router.post("/ideas", ideaController.createIdea)
+router.post("/ideas", ideasMiddlewware.validatePOSTReqBody, ideaController.createIdea)
 
 /*
     Route for updating the existing idea
 */
 
-router.put("/ideas/:id", ideaController.updateIdea)
+router.put("/ideas/:id", ideasMiddlewware.validatePUTReqBody, ideaController.updateIdea)
 
 /*
     Route for deleting the idea
