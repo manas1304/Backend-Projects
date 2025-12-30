@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const ideaController = require('../controllers/ideasController');
 const ideasMiddlewware = require("../middleWare/ideasMiddleware");
+const authMW = require('../middleWare/authorizationmw')
 
 /*
     Start defining routes
@@ -9,7 +10,7 @@ const ideasMiddlewware = require("../middleWare/ideasMiddleware");
 
 // Route for fetching all ideas -- 127.0.0.1:8080/ideas_app/v1/ideas
 
-router.get("/ideas", ideaController.getAllIdeas);
+router.get("/ideas",[authMW.verifyToken], ideaController.getAllIdeas);
 
 /*
     Route for Fetching Ideas based on Id
