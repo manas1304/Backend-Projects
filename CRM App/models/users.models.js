@@ -42,6 +42,4 @@ const userSchema = new mongoose.Schema({
 }, {timestamps: true})
 
 // Exporting the file so that it can be used in other files as well.
-module.exports = {
-    userSchema
-}
+module.exports = mongoose.model('User', userSchema);
