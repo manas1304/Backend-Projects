@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+const constants = require('../utils/constants');
 // Creating the user Schema
 // This is basically how the user should look like
 const userSchema = new mongoose.Schema({
@@ -28,16 +28,16 @@ const userSchema = new mongoose.Schema({
 
     userType:{
         type: String,
-        enum: ["CUSTOMER", "ADMIN", "ENGINEER"],
+        enum: [constants.userTypes.customer, constants.userTypes.engineer, constants.userTypes.admin],
         required: true,
-        default: "CUSTOMER"
+        default: constants.userTypes.customer
     },
 
     userStatus:{
         type: String,
-        enum: ["APPROVED", "PENDING", "BLOCKED"],
+        enum: [constants.userStatus.approved, constants.userStatus.blocked, constants.userStatus.pending],
         required: true,
-        default: "APPROVED"
+        default: constants.userStatus.approved
     }
 
 }, {timestamps: true})

@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const user = require('../models/users.models')
+const constants = require('../utils/constants')
 
 
 /*
@@ -10,10 +11,10 @@ exports.signup = async (req, res) =>{
 
     // User Status -- If it's the customer or no userStatus provided then it is approved and in other case it is pending
     let userStatus = req.body.userStatus;
-    if(!req.body.userType || req.body.userType == "CUSTOMER"){
-        userStatus = "APPROVED"
+    if(!req.body.userType || req.body.userType == constants.userTypes.customer){
+        userStatus = constants.userStatus.approved
     }else{
-        userStatus = "PENDING"
+        userStatus = constants.userStatus.pending
     }
 
     // To store user in Database
