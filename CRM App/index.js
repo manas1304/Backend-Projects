@@ -12,6 +12,9 @@ const mongoose = require('mongoose');
 const userModel = require('./models/users.models');
 const bcrypt = require('bcryptjs')
 
+// We are sending data in JSON format but express expects data in JavaScript Object so we need to parse the data
+app.use(express.json());
+
 // Making the connection with the MongoDb
 
 async function connectToMongoDb(){
@@ -52,6 +55,11 @@ async function connectToMongoDb(){
 }
 
 connectToMongoDb();
+
+
+// Let's stitch the auth route for signup
+const authRoute = require('./routers/auth.routes');
+app.use("/crm/api/v1", authRoute);
 
 
 // Starting the server
