@@ -1,7 +1,8 @@
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcryptjs')
 const user = require('../models/users.models')
 const constants = require('../utils/constants')
-
+const jwt = require('jsonwebtoken')
+const config = require('../configs/auth.config');
 
 /*
     Used for Signup logic
@@ -52,3 +53,54 @@ exports.signup = async (req, res) =>{
         })
     }
 }
+
+
+/*
+    Used for Signin Logic
+*/
+
+exports.signin = async(req, res) =>{
+    
+    // Check if the userId is present or not.
+    const user1 = await user.findOne({userId: req.body.userId});
+    // By default the findOne method retrieves all the fields not only the one mentioned............
+    if(user1 == null){
+        res.status(400).send({
+            message:`Bad Request! ${req.body.userId} is not correct.`
+        })
+        return;
+    }
+
+    // Check if the userStatus is approved or not.
+    if(user1.userStatus != constants.userStatus.approved){
+        res.status(400).send({
+            message:`Can't allow the login as the userStatus is not approved. Current Status: ${user.userStatus}`
+        })
+    }
+
+    // Check if the password is correct or not
+    const passwordIsValid = bcrypt.compareSync(req.body.password, user1.password);
+    if(!passwordIsValid){
+        res.status(401).send({
+            message:"You entered incorrect password. Please check the password and try again"
+        })
+        return;
+    }
+
+
+    // Generate the JWT token and return it.
+    const token = jwt.sign({id: user1.userId}, config.secret, {
+        expiresIn: 120
+    })
+
+    // Return the final response
+    res.status(200).send({
+        name: user1.name,
+        useId: user1.userId,
+        email: user1.email,
+        userStatus: user1.userStatus,
+        accessToken: token
+    })
+}
+
+
