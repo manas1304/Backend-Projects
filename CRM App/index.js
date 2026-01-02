@@ -61,6 +61,10 @@ connectToMongoDb();
 const authRoute = require('./routers/auth.routes');
 app.use("/crm/api/v1", authRoute);
 
+// Stitch the route to get all users
+const userRoute = require('./routers/user.routes');
+app.use("/crm/api/v1", userRoute)
+
 
 // Starting the server
 const PORT = process.env.PORT;
