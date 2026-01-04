@@ -15,7 +15,7 @@ module.exports = {
     ticketStatus: {
         open: "OPEN",
         closed: "CLOSED",
-        block: "BLOCK"
+        blocked: "BLOCKED"
     }
 
 }

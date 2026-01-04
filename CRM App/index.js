@@ -1,7 +1,7 @@
 /*
     1. Logic for creating the server.
     2. Make connection with Mongodb.
-    3. Creat ADMIN user at server bootime( if doesn't already exist).
+    3. Create ADMIN user at server bootime( if doesn't already exist).
     4. Connect to the route layer.
 */
 
@@ -61,9 +61,13 @@ connectToMongoDb();
 const authRoute = require('./routers/auth.routes');
 app.use("/crm/api/v1", authRoute);
 
-// Stitch the route to get all users
+// Stitching the route to get all users
 const userRoute = require('./routers/user.routes');
 app.use("/crm/api/v1", userRoute)
+
+// Stitching the route for raising the tickets
+const ticketRoute = require('./routers/ticket.routes');
+app.use("/crm/api/v1", ticketRoute);
 
 
 // Starting the server

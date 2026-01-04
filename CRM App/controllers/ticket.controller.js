@@ -40,14 +40,7 @@ exports.createTicket = async(req, res) =>{
         // Creating the ticket
         const ticket = await Ticket.create(ticketObj);
         if(ticket){
-            return res.status(201).send({
-                title: ticket.title,
-                ticketPriority: ticket.ticketPriority,
-                description: ticket.description,
-                status: ticket.status,
-                reporter: ticket.reporter,
-                assignee: ticket.assignee
-            })
+            return res.status(201).send({ticket})
         } return;
 
     }catch(err){
@@ -57,4 +50,53 @@ exports.createTicket = async(req, res) =>{
         })
     }
 
+}
+
+
+/**
+ * Controller for Updating the tickets
+ */
+
+
+exports.updateTicket = async(req, res) =>{
+
+    try{
+
+        const ticket = await Ticket.findOne({_id: req.params.id});
+
+        // Which user is making the call
+        const callingUserDetails = await User.findOne({
+            userId: req.userId
+        })
+
+        // I want to check if the right user is trying to update the ticket
+        /**
+         * Calling user is the filer of the ticket
+         * Engineer
+         * Admin
+         */
+
+        if((ticket.reporter == req.userId) || (callingUserDetails.userType == constants.userTypes.engineer)
+            || (callingUserDetails.userType == constants.userTypes.admin)
+        ){
+            ticket.title = req.body.title != undefined ? req.body.title: ticket.title
+            ticket.ticketPriority = req.body.ticketPriority != undefined ? req.body.ticketPriority: ticket.ticketPriority,
+            ticket.description = req.body.description != undefined ? req.body.description: ticket.description,
+            ticket.status = req.body.status != undefined ? req.body.status: ticket.titstatus,
+            ticket.reporter = req.body.reporter != undefined ? req.body.reporter: ticket.reporter,
+            ticket.assignee = req.body.assignee != undefined ? req.body.assignee: ticket.assignee
+
+            const updatedTicket = await ticket.save();
+            res.status(200).send(updatedTicket);
+
+        }else{
+            res.status(400).send({
+                message:"Ticket can only be updated by owner, engineer or admin"
+            })
+        }
+
+    }catch(err){
+        console.log(err);
+        res.status(500).send({message: "Internal Server Error"})
+    }
 }
