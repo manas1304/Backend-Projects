@@ -1,4 +1,5 @@
 module.exports = {
+
     userTypes : {
         customer: "CUSTOMER",
         engineer: "ENGINEER",
@@ -9,5 +10,12 @@ module.exports = {
         pending: "PENDING",
         approved: "APPROVED",
         blocked: "BLOCKED"
+    },
+
+    ticketStatus: {
+        open: "OPEN",
+        closed: "CLOSED",
+        block: "BLOCK"
     }
+
 }

@@ -67,6 +67,39 @@ verifyUserReqBody = async(req, res, next) =>{
     next();
 }
 
+
+// Validate the userStatus and userType while updating the user details
+
+const validateUserStatusAndType = (req, res, next) =>{
+    
+    // Validate userType
+    const userType = req.body.userType;
+    const possibleUserTypes = [constants.userTypes.customer, constants.userTypes.engineer, constants.userTypes.admin];
+
+    if(userType && !possibleUserTypes.includes(userType)){
+        res.status(400).send({
+            message: "Invalid userType provided. Possible values are CUSTOMER | ENGINEER | ADMIN"
+        })
+        return
+    }
+
+    // Validate userStatus
+    const userStatus = req.body.userStatus;
+    const userStatuses = [constants.userStatus.approved, constants.userStatus.blocked, constants.userStatus.pending];
+
+    if(userStatus && !userStatuses.includes(userStatus)){
+        res.status(400).send({
+            message: "Invalid userStatus provided. Possible values are APPROVED | PENDING | BLOCKED"
+        })
+        return
+    }
+
+    next();
+    
+}
+
+
 module.exports = {
-    verifyUserReqBody: verifyUserReqBody
+    verifyUserReqBody: verifyUserReqBody,
+    validateUserStatusAndType: validateUserStatusAndType
 }
