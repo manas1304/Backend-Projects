@@ -100,3 +100,64 @@ exports.updateTicket = async(req, res) =>{
         res.status(500).send({message: "Internal Server Error"})
     }
 }
+
+
+/**
+ * Fetching all the tickets:
+ * 1. Customers - he/she should fetch only their tickets.
+ * 2. Engineers - he/she should fetch only the tickets assigned to them or created them.
+ * 3. ADMIN -- should be able to view all the tickets
+ */
+
+exports.getAllTickets = async (req, res) =>{
+
+    /**
+     * Fetch the user Object which is making the request
+     */
+    const savedUser = await User.findOne({
+        userId: req.userId
+    })
+
+    const queryObj = {};
+    
+
+    if(savedUser.userType == constants.userTypes.customer){
+        // Only return the tickets filed by this customer
+        queryObj.reporter = savedUser.userId;
+    }else if(savedUser.userType == constants.userTypes.engineer){
+        // Only return the tickets filed or created by engineer
+        queryObj.assignee = savedUser.userId;
+    }else{
+        // Return all the tickets
+    }
+
+    const tickets = await Ticket.find(queryObj);
+    return res.status(200).send(tickets);
+
+}
+
+/**
+ * Fetch the ticket based on Id
+ */
+
+exports.getTicketBasedOnId = async(req, res)=>{
+    
+    const ticket = await Ticket.findOne({
+        _id: req.params.id
+    })
+
+    const savedUser = await User.findOne({
+        userId: req.userId
+    })
+
+    if(savedUser.userType == constants.userTypes.admin
+        || savedUser.userType == constants.userTypes.engineer || ticket.reporter == req.userId
+    ){
+        return res.status(200).send(ticket);
+    }else{
+        return res.status(400).send({
+            message: "Can't fetch ticket as you are not authorized"
+        })
+    }
+    
+}
