@@ -7,12 +7,12 @@ const commentSchema = new mongoose.Schema({
     },
 
     ticketId:{
-        type: mongoose.SchemaType.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "Ticket",
         required: true
     },
 
-    commenterId:{
+    commentorId:{
         type: String,
         required: true
     }
