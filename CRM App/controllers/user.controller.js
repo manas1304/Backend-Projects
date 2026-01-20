@@ -77,3 +77,29 @@ exports.update = async(req, res) =>{
         })
     }
 }
+
+// Controller to delete the user
+exports.delete = async(req, res) =>{
+
+    const userReqId = req.params.userId;
+
+    try{
+        const user = await usersModels.findOneAndDelete({userId: userReqId});
+
+        if(!user){
+            return res.status(404).send({
+                message: "User with the given ID not found"
+            })
+        }
+
+        res.status(200).send({
+            message: "User Successfully deleted"
+        })
+        
+    }catch(err){
+        console.log("Error while deleting the user", err);
+        res.status(500).send({
+            message: "Internal server error while deleting the user"
+        })
+    }
+}

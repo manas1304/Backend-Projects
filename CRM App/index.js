@@ -6,11 +6,15 @@
 */
 
 const express = require('express');
+const cors = require('cors');
 const app = express();
 require('dotenv').config();
 const mongoose = require('mongoose');
 const userModel = require('./models/users.models');
 const bcrypt = require('bcryptjs')
+
+// Enabling CORS for all requests -- This is required because frontend and backend will be running on different ports.
+app.use(cors());
 
 // We are sending data in JSON format but express expects data in JavaScript Object so we need to parse the data
 app.use(express.json());

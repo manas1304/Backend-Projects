@@ -10,5 +10,6 @@ route.get("/users/:userId",[authMW.verifyToken, authMW.isAdmin],  userController
 
 route.put("/users/:userId", [authMW.verifyToken, authMW.isAdmin, verifyUserReqBody.validateUserStatusAndType], userController.update )
 
+route.delete("/users/:userId", [authMW.verifyToken, authMW.isAdmin], userController.delete);
 
 module.exports = route;

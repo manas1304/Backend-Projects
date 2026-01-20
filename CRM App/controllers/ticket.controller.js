@@ -7,7 +7,11 @@
 
 const User = require('../models/users.models');
 const constants = require('../utils/constants');
-const Ticket = require('../models/ticket.model')
+const Ticket = require('../models/ticket.model');
+
+const dotenv = require('dotenv');
+dotenv.config();
+
 
 
 exports.createTicket = async(req, res) =>{
@@ -40,6 +44,7 @@ exports.createTicket = async(req, res) =>{
         // Creating the ticket
         const ticket = await Ticket.create(ticketObj);
         if(ticket){
+            // Here we need to send the ticket message to the Redis Queue
             return res.status(201).send({ticket})
         } return;
 
@@ -82,7 +87,7 @@ exports.updateTicket = async(req, res) =>{
             ticket.title = req.body.title != undefined ? req.body.title: ticket.title
             ticket.ticketPriority = req.body.ticketPriority != undefined ? req.body.ticketPriority: ticket.ticketPriority,
             ticket.description = req.body.description != undefined ? req.body.description: ticket.description,
-            ticket.status = req.body.status != undefined ? req.body.status: ticket.titstatus,
+            ticket.status = req.body.status != undefined ? req.body.status: ticket.status,
             ticket.reporter = req.body.reporter != undefined ? req.body.reporter: ticket.reporter,
             ticket.assignee = req.body.assignee != undefined ? req.body.assignee: ticket.assignee
 
@@ -161,3 +166,5 @@ exports.getTicketBasedOnId = async(req, res)=>{
     }
     
 }
+
+

@@ -96,11 +96,13 @@ exports.signin = async(req, res) =>{
     // Return the final response
     res.status(200).send({
         name: user1.name,
-        useId: user1.userId,
+        userId: user1.userId,
+        userType: user1.userType,
         email: user1.email,
         userStatus: user1.userStatus,
         accessToken: token
     })
+    
 }
 
 
