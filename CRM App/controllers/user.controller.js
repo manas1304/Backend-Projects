@@ -2,6 +2,8 @@
 
 const usersModels = require("../models/users.models")
 const objectConverter = require('../utils/objectConverter')
+const ticketModel = require('../models/ticket.model')
+
 
 exports.findAllUsers = async(req, res) =>{
 
@@ -84,6 +86,14 @@ exports.delete = async(req, res) =>{
     const userReqId = req.params.userId;
 
     try{
+        //1. Deleting all the tickets where the user is the reporter or the assignee
+        await ticketModel.deleteMany({
+            $or:[
+                {reporter: userReqId},
+                {assignee: userReqId}
+            ]
+        })
+
         const user = await usersModels.findOneAndDelete({userId: userReqId});
 
         if(!user){
@@ -93,11 +103,11 @@ exports.delete = async(req, res) =>{
         }
 
         res.status(200).send({
-            message: "User Successfully deleted"
+            message: "User and all related tickets Successfully deleted"
         })
         
     }catch(err){
-        console.log("Error while deleting the user", err);
+        console.log("Error while cascade deletion", err);
         res.status(500).send({
             message: "Internal server error while deleting the user"
         })

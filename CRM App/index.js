@@ -11,6 +11,7 @@ const app = express();
 require('dotenv').config();
 const mongoose = require('mongoose');
 const userModel = require('./models/users.models');
+const ticketModel = require('./models/ticket.model')
 const bcrypt = require('bcryptjs')
 
 // Enabling CORS for all requests -- This is required because frontend and backend will be running on different ports.
@@ -52,6 +53,9 @@ async function connectToMongoDb(){
             console.log("Admin already present", user);
         }
 
+        // Calling the cleanup function here
+            await cleanOrphanTickets()
+
     }catch(err){
         console.log("Failed to connect to MongoDb", err);
         console.log("Error message", err.message);
@@ -72,6 +76,35 @@ app.use("/crm/api/v1", userRoute)
 // Stitching the route for raising the tickets
 const ticketRoute = require('./routers/ticket.routes');
 app.use("/crm/api/v1", ticketRoute);
+
+// Deleting the orphan tickets with no userId 
+// One time logic to clean up the tickets
+async function cleanOrphanTickets() {
+    try {
+        // 1. Get all valid userId strings from the database
+        const validUsers = await userModel.find({}, 'userId');
+        const validUserIds = validUsers.map(u => u.userId);
+
+        // 2. Delete tickets where the reporter is NOT in our valid list
+        const reporterResult = await ticketModel.deleteMany({
+            reporter: { $nin: validUserIds }
+        });
+
+        // 3. Delete tickets where an assignee exists but is NOT in our valid list
+        // Note: We skip tickets where assignee is null/empty
+        const assigneeResult = await ticketModel.deleteMany({
+            assignee: { $exists: true, $ne: null, $nin: validUserIds }
+        });
+
+        const totalDeleted = reporterResult.deletedCount + assigneeResult.deletedCount;
+        
+        if (totalDeleted > 0) {
+            console.log(`Successfully purged ${totalDeleted} orphan tickets from deleted users.`);
+        }
+    } catch (err) {
+        console.log("Cleanup failed:", err.message);
+    }
+}
 
 
 // Starting the server
