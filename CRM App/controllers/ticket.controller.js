@@ -22,7 +22,8 @@ exports.createTicket = async(req, res) =>{
         ticketPriority: req.body.ticketPriority,
         description: req.body.description,
         status: req.body.status,
-        reporter: req.userId // This will be set at the MW layer, during auth.
+        reporter: req.userId, // This will be set at the MW layer, during auth.
+        assignee: "Unassigned" // Setting this explicitly to unassigned
     }
 
     
@@ -30,15 +31,15 @@ exports.createTicket = async(req, res) =>{
 
     // Firstly I need to find an Engineer which is in approved state.
 
-    const engineer = await User.findOne({
-        userType: constants.userTypes.engineer,
-        userStatus: constants.userStatus.approved
-    })
-    console.log(engineer);
+    // const engineer = await User.findOne({
+    //     userType: constants.userTypes.engineer,
+    //     userStatus: constants.userStatus.approved
+    // })
+    // console.log(engineer);
 
-    if(engineer){
-        ticketObj.assignee = engineer.userId
-    }
+    // if(engineer){
+    //     ticketObj.assignee = engineer.userId
+    // }
 
     try{
         // Creating the ticket
