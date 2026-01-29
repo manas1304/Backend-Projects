@@ -61,13 +61,28 @@ exports.update = async(req, res) =>{
 
     const userReqId = req.params.userId;
 
+    const updateData = {
+        name: req.body.name, 
+        userStatus: req.body.userStatus,
+        userType: req.body.userType
+    };
+
+    if (req.body.password) {
+        updateData.password = bcrypt.hashSync(req.body.password, 8);
+    }
+
     try{
 
-        const user = await usersModels.findOneAndUpdate({userId: userReqId}, {
-            userName: req.body.name,
-            userStatus: req.body.userStatus,
-            userType: req.body.userType
-        }).exec();
+        const user = await usersModels.findOneAndUpdate(
+            { userId: userReqId },
+            updateData,
+            { new: true } 
+        ).exec();
+
+        if (!user) {
+            return res.status(404).send({ message: "User not found" });
+        }
+        
         res.status(200).send({
             message:"User record has been successfully updated."
         })
