@@ -77,6 +77,11 @@ app.use("/crm/api/v1", userRoute)
 const ticketRoute = require('./routers/ticket.routes');
 app.use("/crm/api/v1", ticketRoute);
 
+
+// Stitching the route for notification feature
+const notificationRoutes = require('./routers/notification.routes');
+app.use("/crm/api/v1", notificationRoutes);
+
 // Deleting the orphan tickets with no userId 
 // One time logic to clean up the tickets
 async function cleanOrphanTickets() {

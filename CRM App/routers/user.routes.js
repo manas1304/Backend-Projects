@@ -8,7 +8,7 @@ route.get("/users", [authMW.verifyToken, authMW.isAdmin], userController.findAll
 
 route.get("/users/:userId",[authMW.verifyToken, authMW.isAdmin],  userController.findById);
 
-route.put("/users/:userId", [authMW.verifyToken, authMW.isAdmin, verifyUserReqBody.validateUserStatusAndType], userController.update )
+route.put("/users/:userId", [authMW.verifyToken, verifyUserReqBody.validateUserStatusAndType], userController.update )
 
 route.delete("/users/:userId", [authMW.verifyToken, authMW.isAdmin], userController.delete);
 

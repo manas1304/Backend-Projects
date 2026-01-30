@@ -8,6 +8,7 @@
 const User = require('../models/users.models');
 const constants = require('../utils/constants');
 const Ticket = require('../models/ticket.model');
+const Notification = require('../models/notifications.model')
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -26,20 +27,6 @@ exports.createTicket = async(req, res) =>{
         assignee: "Unassigned" // Setting this explicitly to unassigned
     }
 
-    
-    // Create the ticket and auto assign to the Engineer if available
-
-    // Firstly I need to find an Engineer which is in approved state.
-
-    // const engineer = await User.findOne({
-    //     userType: constants.userTypes.engineer,
-    //     userStatus: constants.userStatus.approved
-    // })
-    // console.log(engineer);
-
-    // if(engineer){
-    //     ticketObj.assignee = engineer.userId
-    // }
 
     try{
         // Creating the ticket
@@ -85,6 +72,10 @@ exports.updateTicket = async(req, res) =>{
         if((ticket.reporter == req.userId) || (callingUserDetails.userType == constants.userTypes.engineer)
             || (callingUserDetails.userType == constants.userTypes.admin)
         ){
+            // Capturing old values to compare later
+            const oldStatus = ticket.status;
+            const oldAssignee = ticket.assignee;
+
             ticket.title = req.body.title != undefined ? req.body.title: ticket.title
             ticket.ticketPriority = req.body.ticketPriority != undefined ? req.body.ticketPriority: ticket.ticketPriority,
             ticket.description = req.body.description != undefined ? req.body.description: ticket.description,
@@ -93,6 +84,23 @@ exports.updateTicket = async(req, res) =>{
             ticket.assignee = req.body.assignee != undefined ? req.body.assignee: ticket.assignee
 
             const updatedTicket = await ticket.save();
+
+            if(req.body.status && req.body.status !== oldStatus){
+                await Notification.create({
+                    receiverId: ticket.reporter, // Notify customer that ticket assignee is changed
+                    message: `Your ticket ${ticket._id} status change to ${ticket.status}`,
+                    ticketId: ticket._id
+                })
+            }
+
+            if(req.body.assignee && req.body.assignee !== oldAssignee){
+                await Notification.create({
+                    receiverId: ticket.assignee, // Notify new engineer about the ticket assigned to him
+                    message: `Your ticket ${ticket._id} status change to ${ticket.status}`,
+                    ticketId: ticket._id
+                })
+            }
+
             res.status(200).send(updatedTicket);
 
         }else{
