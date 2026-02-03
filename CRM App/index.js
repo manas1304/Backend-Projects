@@ -15,7 +15,15 @@ const ticketModel = require('./models/ticket.model')
 const bcrypt = require('bcryptjs')
 
 // Enabling CORS for all requests -- This is required because frontend and backend will be running on different ports.
-app.use(cors());
+// Updating this CORS for deployment so that vercel and render can talk to each other without interruptions.
+app.use(cors({
+    origin: [
+        "http://localhost:3000", // Allowing local development
+        process.env.FRONTEND_URL // Will be our vercel url ( ex- https://your_app.vercel.app)
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
+}));
 
 // We are sending data in JSON format but express expects data in JavaScript Object so we need to parse the data
 app.use(express.json());

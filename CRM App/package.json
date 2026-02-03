@@ -4,6 +4,7 @@
   "description": "End to End backend project for the Customer Relationship Management App",
   "main": "index.js",
   "scripts": {
+    "start":"node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Manas Shukla",

@@ -1,3 +1,4 @@
+require('dotenv').config();
 module.exports = {
-    secret:"Manas Shukla's secret"
+    secret: process.env.secret
 }
