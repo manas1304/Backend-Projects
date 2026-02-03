@@ -19,7 +19,7 @@ const bcrypt = require('bcryptjs')
 app.use(cors({
     origin: [
         "http://localhost:3000", // Allowing local development
-        process.env.FRONTEND_URL // Will be our vercel url ( ex- https://your_app.vercel.app)
+        "https://frontend-projects-beta-one.vercel.app"// Will be our vercel url ( ex- https://your_app.vercel.app)
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
