@@ -3,6 +3,7 @@ const user = require('../models/users.models')
 const constants = require('../utils/constants')
 const jwt = require('jsonwebtoken')
 const config = require('../configs/auth.config');
+const {sendWelcomeEmail} = require('../utils/email.util');
 
 /*
     Used for Signup logic
@@ -33,6 +34,10 @@ exports.signup = async (req, res) =>{
     try{
 
         const userCreated = await user.create(userObj);
+
+        // Triggering welcome email feature as soon as the user Object is created
+        sendWelcomeEmail(userCreated.email, userCreated.userName);
+
         const postRes = {
             name: userCreated.name,
             userId: userCreated.userId,
