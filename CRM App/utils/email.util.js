@@ -11,6 +11,13 @@ async function sendWelcomeEmail(userEmail, userName) {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
       },
+      // Force IPv4
+      connectionTimeout: 10000, // 10 seconds
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
+      dnsTimeout: 10000,
+      // This is the important line to bypass IPv6 issues so now I am forcing IPv4.
+      family: 4,
     });
 
     // Content Inside the mail
