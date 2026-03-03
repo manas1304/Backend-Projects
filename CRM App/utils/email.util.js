@@ -1,4 +1,5 @@
 const nodemailer = require("nodemailer");
+const dns = require("dns"); // 1. Import the built-in DNS module
 
 async function sendWelcomeEmail(userEmail, userName) {
   try {
@@ -12,9 +13,11 @@ async function sendWelcomeEmail(userEmail, userName) {
         pass: process.env.EMAIL_PASS,
       },
       // Force IPv4 to prevent ENETUNREACH errors on Render
-      family: 4, 
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
+      lookup: (hostname, options, callback) => {
+        dns.lookup(hostname, { family: 4 }, (err, address, family) => {
+          callback(err, address, family);
+        });
+      },
     });
 
     const mailOptions = {
