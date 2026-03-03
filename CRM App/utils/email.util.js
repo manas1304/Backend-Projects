@@ -17,7 +17,7 @@ async function sendWelcomeEmail(userEmail, userName){
             from: `"CRM Pro Support" <${process.env.EMAIL_USER}>`,
             to: userEmail,
             subject: `Welcome to CRM Pro!`,
-            html: 
+            html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;">
                     <h2 style="color: #2563eb;">Welcome to the Team, ${userName}!</h2>
                     <p>Thank you for registering with <b>CRM Pro</b>. Your account has been successfully created.</p>
@@ -26,7 +26,7 @@ async function sendWelcomeEmail(userEmail, userName){
                         <a href="http://localhost:3000/login" style="background-color: #0f172a; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">Access Dashboard</a>
                     </div>
                     <p style="margin-top: 40px; font-size: 12px; color: #64748b;">© 2026 CRM Pro. All rights reserved.</p>
-                </div>
+                </div> `
             ,
         }
 
