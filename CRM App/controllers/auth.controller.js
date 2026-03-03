@@ -36,7 +36,7 @@ exports.signup = async (req, res) =>{
         const userCreated = await user.create(userObj);
 
         // Triggering welcome email feature as soon as the user Object is created
-        sendWelcomeEmail(userCreated.email, userCreated.userName);
+        sendWelcomeEmail(userCreated.email, userCreated.name);
 
         const postRes = {
             name: userCreated.name,
