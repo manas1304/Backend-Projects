@@ -6,7 +6,7 @@ async function sendWelcomeEmail(userEmail, name){
 
     const {data, error} = await resend.emails.send({
       from: `"CRM Pro Support" <onboarding@resend.dev>`,
-      to: userEmail,
+      to: 'manasshukla01304@gmail.com',
       subject: `Welcome to CRM Pro!`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;">
