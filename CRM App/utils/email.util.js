@@ -1,4 +1,5 @@
 const SibApiV3Sdk = require('@getbrevo/brevo');
+console.log(Object.keys(brevo));
 
 const defaultClient = SibApiV3Sdk.ApiClient.instance;
 const apiKey = defaultClient.authentications['api-key'];
