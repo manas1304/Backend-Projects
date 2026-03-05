@@ -1,11 +1,11 @@
-const brevo = require('@getbrevo/brevo');
+const { TransactionalEmailsApi, SendSmtpEmail } = require('@getbrevo/brevo');
 
-const apiInstance = new brevo.TransactionalEmailsApi(); // Setting API key to instance not apiClient.
+const apiInstance = new TransactionalEmailsApi();
 apiInstance.authentications['api-key'].apiKey = process.env.BREVO_API_KEY;
 
 async function sendWelcomeEmail(userEmail, name) {
   try {
-    const sendSmtpEmail = new brevo.SendSmtpEmail();
+    const sendSmtpEmail = new SendSmtpEmail();
     sendSmtpEmail.subject = 'Welcome to CRM Pro!';
     sendSmtpEmail.sender = { email: 'manasshukla01304@gmail.com', name: 'CRM Pro Support' };
     sendSmtpEmail.to = [{ email: userEmail, name: name }];
