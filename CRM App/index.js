@@ -16,7 +16,7 @@ const bcrypt = require('bcryptjs')
 
 /** Wrapping express app with Node.js native http server so that we can add the functionality of socket.io */
 const http = require('http');
-const socketUtil = require('/utils/socket.util');
+const socketUtil = require('./utils/socket.util');
 
 // Creating server
 const server = http.createServer(app)
