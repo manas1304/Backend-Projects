@@ -14,6 +14,13 @@ const userModel = require('./models/users.models');
 const ticketModel = require('./models/ticket.model')
 const bcrypt = require('bcryptjs')
 
+/** Wrapping express app with Node.js native http server so that we can add the functionality of socket.io */
+const http = require('http');
+const socketUtil = require('/utils/socket.util');
+
+// Creating server
+const server = http.createServer(app)
+
 // Enabling CORS for all requests -- This is required because frontend and backend will be running on different ports.
 // Updating this CORS for deployment so that vercel and render can talk to each other without interruptions.
 app.use(cors({
@@ -119,10 +126,30 @@ async function cleanOrphanTickets() {
     }
 }
 
+// Initializing socket.io 
+const io = socketUtil.init(server);
+
+// Handle Connections and rooms
+io.on('connection', (socket) =>{
+    console.log("New client connected", socket.id);
+
+    // When a user opens a ticket, they join a room specific to that ticketId
+    socket.on('joinTicket', (ticketId) =>{
+        socket.join(ticketId);
+        console.log(`Socket ${socket.id} joined ticket room: ${ticketId}`);
+    })
+
+    // Disconnecting from the socket
+    socket.on('disconnect', () => {
+        console.log('Client disconnected:', socket.id);
+    });
+})
+
 
 // Starting the server
+// Changing app.liste to server.listen for socket.io to work
 const PORT = process.env.PORT || 7777;
 console.log(PORT);
-app.listen(PORT, () =>{
+server.listen(PORT, () =>{
     console.log(`Server running at port number: ${PORT}`);
 })

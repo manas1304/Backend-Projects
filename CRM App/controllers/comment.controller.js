@@ -2,6 +2,7 @@
  * Controller to create a comment
  */
 const Comment = require('../models/comments.model');
+const socketUtil = require('../utils/socket.util'); // Import socket utility
 
 
 exports.createComment = async(req, res) =>{
@@ -15,6 +16,12 @@ exports.createComment = async(req, res) =>{
     try{
 
         const comment = await Comment.create(commentObj);
+
+        // New Real Time Logic
+        // Broadcast the new comment to anyone viewing this ticket
+        // This line makes sure the comment data is shown to only those users which are currently viewing the ticket and not to others
+        socketUtil.getIO().to(req.params.ticketId).emit('newComment', comment);
+
         return res.status(201).send(comment);
 
     }catch(err){
