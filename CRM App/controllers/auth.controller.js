@@ -3,15 +3,14 @@ const user = require('../models/users.models')
 const constants = require('../utils/constants')
 const jwt = require('jsonwebtoken')
 const config = require('../configs/auth.config');
+const Workspace = require('../models/workspace.model'); // Imported Workspace model ---
 const {sendWelcomeEmail} = require('../utils/email.util');
 
 /*
     Used for Signup logic
 */
-
 exports.signup = async (req, res) =>{
 
-    // User Status -- If it's the customer or no userStatus provided then it is approved and in other case it is pending
     let userStatus = req.body.userStatus;
     if(!req.body.userType || req.body.userType == constants.userTypes.customer){
         userStatus = constants.userStatus.approved
@@ -19,21 +18,44 @@ exports.signup = async (req, res) =>{
         userStatus = constants.userStatus.pending
     }
 
-    // To store user in Database
-    // The raw data that the user sends by signing up.....................
-
-    const userObj = {
-        name: req.body.name,
-        userId: req.body.userId,
-        email: req.body.email,
-        password: bcrypt.hashSync(req.body.password, 8),
-        userType: req.body.userType,
-        userStatus: userStatus
-    }
-
     try{
+        // Workspace Generation & Validation Logic
+        // 1. Capture workspace id if provided ( for invited users)
+        let assignedWorkspaceId = req.body.workspaceId;
+        let newWorkspace = null;
+
+        // 2. If it's an Admin and no workspace is provided, create a new Workspace for them
+        if (req.body.userType === constants.userTypes.admin && !assignedWorkspaceId) {
+            newWorkspace = await Workspace.create({
+                name: `${req.body.name}'s Company`,
+                ownerId: null // Temporarily null, will link after the user document is created
+            });
+            assignedWorkspaceId = newWorkspace._id;
+        }
+
+        // 3. Reject any signup that doesn't belong to a workspace
+        if (!assignedWorkspaceId) {
+            return res.status(400).send({ message: "Failed! A workspaceId is required to join." });
+        }
+
+        const userObj = {
+            name: req.body.name,
+            userId: req.body.userId,
+            email: req.body.email,
+            password: bcrypt.hashSync(req.body.password, 8),
+            userType: req.body.userType,
+            userStatus: userStatus,
+            workspaceId: assignedWorkspaceId // Link the new user to the workspace
+        }
 
         const userCreated = await user.create(userObj);
+
+        // Link Admin to Workspace ---
+        // 4. If we created a new workspace, update its ownerId to this newly created Admin
+        if (newWorkspace) {
+            newWorkspace.ownerId = userCreated._id;
+            await newWorkspace.save();
+        }
 
         // Triggering welcome email feature as soon as the user Object is created
         sendWelcomeEmail(userCreated.email, userCreated.name);
@@ -44,12 +66,12 @@ exports.signup = async (req, res) =>{
             email: userCreated.email,
             userType: userCreated.userType,
             userStatus: userCreated.userStatus,
+            workspaceId: userCreated.workspaceId, // Return workspaceId in the response
             createdAt: userCreated.createdAt,
             updatedAt: userCreated.updatedAt
-
         }
         res.status(201).send(postRes)
-        console.log(postRes); // Since i don't want the _id and _v - meta information inside the object so i am returning an object of my choice
+        console.log(postRes); 
 
     }catch(err){
         console.log("Error while creating user", err);
@@ -63,12 +85,10 @@ exports.signup = async (req, res) =>{
 /*
     Used for Signin Logic
 */
-
 exports.signin = async(req, res) =>{
     
     // Check if the userId is present or not.
     const user1 = await user.findOne({userId: req.body.userId});
-    // By default the findOne method retrieves all the fields not only the one mentioned............
     if(user1 == null){
         res.status(400).send({
             message:`Bad Request! ${req.body.userId} is not correct.`
@@ -81,6 +101,7 @@ exports.signin = async(req, res) =>{
         res.status(400).send({
             message:`Can't allow the login as the userStatus is not approved. Current Status: ${user.userStatus}`
         })
+        return; // Added missing return to stop execution if not approved
     }
 
     // Check if the password is correct or not
@@ -92,11 +113,14 @@ exports.signin = async(req, res) =>{
         return;
     }
 
-
     // Generate the JWT token and return it.
-    const token = jwt.sign({id: user1.userId}, config.secret, {
-        expiresIn: 300
-    })
+    // Inject workspaceId into the JWT payload ---
+    // Now, every time the user makes an API request, we know which company data they are allowed to see
+    const token = jwt.sign(
+        { id: user1.userId, workspaceId: user1.workspaceId }, 
+        config.secret, 
+        { expiresIn: 300 }
+    )
 
     // Return the final response
     res.status(200).send({
@@ -105,9 +129,8 @@ exports.signin = async(req, res) =>{
         userType: user1.userType,
         email: user1.email,
         userStatus: user1.userStatus,
+        workspaceId: user1.workspaceId, // Send workspaceId back to the frontend ---
         accessToken: token
     })
     
 }
-
-

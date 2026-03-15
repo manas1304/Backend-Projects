@@ -21,6 +21,8 @@ const verifyToken = (req, res, next) =>{
             })
         }
         req.userId = decoded.id;
+        // Attach workspace context to the request 
+        req.workspaceId = decoded.workspaceId;
     })
 
     next();

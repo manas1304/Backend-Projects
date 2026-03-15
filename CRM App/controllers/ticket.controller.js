@@ -1,7 +1,6 @@
 /**
  * Define the controller to create a new ticket
- * 
- * As soon as the ticket is created it should be auto assigned to an Engineer
+ * * As soon as the ticket is created it should be auto assigned to an Engineer
  * if available
  */
 
@@ -24,15 +23,16 @@ exports.createTicket = async(req, res) =>{
         description: req.body.description,
         status: req.body.status,
         reporter: req.userId, // This will be set at the MW layer, during auth.
-        assignee: "Unassigned" // Setting this explicitly to unassigned
+        assignee: "Unassigned", // Setting this explicitly to unassigned
+        
+        // Hardcode the workspace ID from the verified token
+        workspaceId: req.workspaceId
     }
-
 
     try{
         // Creating the ticket
         const ticket = await Ticket.create(ticketObj);
         if(ticket){
-            // Here we need to send the ticket message to the Redis Queue
             return res.status(201).send({ticket})
         } return;
 
@@ -49,13 +49,19 @@ exports.createTicket = async(req, res) =>{
 /**
  * Controller for Updating the tickets
  */
-
-
 exports.updateTicket = async(req, res) =>{
 
     try{
+        // Find the ticket AND ensure it belongs to the user's workspace 
+        const ticket = await Ticket.findOne({
+            _id: req.params.id,
+            workspaceId: req.workspaceId 
+        });
 
-        const ticket = await Ticket.findOne({_id: req.params.id});
+        // Handle case where ticket is not found or belongs to another workspace
+        if(!ticket){
+            return res.status(404).send({message: "Ticket not found in your workspace"});
+        }
 
         // Which user is making the call
         const callingUserDetails = await User.findOne({
@@ -125,29 +131,36 @@ exports.updateTicket = async(req, res) =>{
 
 exports.getAllTickets = async (req, res) =>{
 
-    /**
-     * Fetch the user Object which is making the request
-     */
-    const savedUser = await User.findOne({
-        userId: req.userId
-    })
+    try {
+        /**
+         * Fetch the user Object which is making the request
+         */
+        const savedUser = await User.findOne({
+            userId: req.userId
+        })
 
-    const queryObj = {};
-    
+        // The absolute baseline filter for multi-tenancy
+        // Every query will now ONLY search within this specific workspace
+        const queryObj = { workspaceId: req.workspaceId };
+        
 
-    if(savedUser.userType == constants.userTypes.customer){
-        // Only return the tickets filed by this customer
-        queryObj.reporter = savedUser.userId;
-    }else if(savedUser.userType == constants.userTypes.engineer){
-        // Only return the tickets filed or created by engineer
-        queryObj.assignee = savedUser.userId;
-    }else{
-        // Return all the tickets
+        if(savedUser.userType == constants.userTypes.customer){
+            // Only return the tickets filed by this customer
+            queryObj.reporter = savedUser.userId;
+        }else if(savedUser.userType == constants.userTypes.engineer){
+            // Only return the tickets filed or created by engineer
+            queryObj.assignee = savedUser.userId;
+        }else{
+            // Return all the tickets (Admin case - automatically scoped to workspace by queryObj)
+        }
+
+        const tickets = await Ticket.find(queryObj);
+        return res.status(200).send(tickets);
+
+    } catch(err) {
+        console.log("Error while fetching tickets", err);
+        res.status(500).send({message: "Internal Server Error"})
     }
-
-    const tickets = await Ticket.find(queryObj);
-    return res.status(200).send(tickets);
-
 }
 
 /**
@@ -156,24 +169,33 @@ exports.getAllTickets = async (req, res) =>{
 
 exports.getTicketBasedOnId = async(req, res)=>{
     
-    const ticket = await Ticket.findOne({
-        _id: req.params.id
-    })
-
-    const savedUser = await User.findOne({
-        userId: req.userId
-    })
-
-    if(savedUser.userType == constants.userTypes.admin
-        || savedUser.userType == constants.userTypes.engineer || ticket.reporter == req.userId
-    ){
-        return res.status(200).send(ticket);
-    }else{
-        return res.status(400).send({
-            message: "Can't fetch ticket as you are not authorized"
+    try {
+        // Ensure the requested ticket also belongs to the user's workspace ---
+        const ticket = await Ticket.findOne({
+            _id: req.params.id,
+            workspaceId: req.workspaceId
         })
+
+        // Handle not found/wrong workspace ---
+        if(!ticket){
+            return res.status(404).send({message: "Ticket not found in your workspace"});
+        }
+
+        const savedUser = await User.findOne({
+            userId: req.userId
+        })
+
+        if(savedUser.userType == constants.userTypes.admin
+            || savedUser.userType == constants.userTypes.engineer || ticket.reporter == req.userId
+        ){
+            return res.status(200).send(ticket);
+        }else{
+            return res.status(400).send({
+                message: "Can't fetch ticket as you are not authorized"
+            })
+        }
+    } catch(err) {
+        console.log("Error fetching ticket", err);
+        res.status(500).send({message: "Internal Server Error"})
     }
-    
 }
-
-
